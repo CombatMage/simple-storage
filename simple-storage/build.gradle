@@ -1,0 +1,145 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+		classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
+	}
+}
+
+tasks.withType(Javadoc) {
+	enabled = false
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+ext {
+	bintrayRepo = 'maven'
+	bintrayName = 'simple-storage'
+
+	publishedGroupId = 'org.neidhardt'
+	libraryName = 'simple-storage'
+	artifact = 'simple-storage'
+
+	libraryDescription = 'simple android library to store data'
+
+	siteUrl = 'https://github.com/CombatMage/SimpleStorage'
+	gitUrl = 'https://github.com/CombatMage/SimpleStorage.git'
+
+	libraryVersion = '1.0.0'
+
+	developerId = 'combatmage'
+	developerName = 'Eric Neidhardt'
+	developerEmail = 'eric.neidhardt@gmail.com'
+
+	licenseName = 'The Apache Software License, Version 2.0'
+	licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+	allLicenses = ["Apache-2.0"]
+}
+
+android {
+	compileSdkVersion rootProject.ext.compileSdkVersion
+	buildToolsVersion rootProject.ext.buildToolsVersion
+
+	defaultConfig {
+		minSdkVersion project.projectMinSdkVersion
+		targetSdkVersion project.projectTargetSdkVersion
+		versionCode 1
+		versionName "1.0"
+	}
+	buildTypes {
+		release {
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+		}
+	}
+	sourceSets {
+		main.java.srcDirs += 'src/main/kotlin'
+		test.java.srcDirs += 'src/test/kotlin'
+		debug.java.srcDirs += 'src/debug/kotlin'
+		release.java.srcDirs += 'src/release/kotlin'
+	}
+}
+
+dependencies {
+	compile fileTree(dir: 'libs', include: ['*.jar'])
+
+	compile rootProject.ext.libraries.kotlin
+	compile rootProject.ext.libraries.supportAppCompat
+
+	//RxAndroid
+	compile rootProject.ext.libraries.rxAndroid
+	compile rootProject.ext.libraries.rxKotlin
+	compile rootProject.ext.libraries.rxJava
+
+	//Gson
+	compile rootProject.ext.libraries.gson
+
+	//Testing
+	testCompile rootProject.ext.libraries.junit
+	testCompile rootProject.ext.libraries.mockito
+	testCompile rootProject.ext.libraries.robolectric
+	testCompile rootProject.ext.libraries.robolectricMultidex
+	testCompile rootProject.ext.libraries.robolectricSupportV4
+}
+
+apply plugin: 'com.jfrog.bintray'
+
+version = libraryVersion
+
+if (project.hasProperty("android")) { // Android libraries
+	task sourcesJar(type: Jar) {
+		classifier = 'sources'
+		from android.sourceSets.main.java.srcDirs
+	}
+
+	task javadoc(type: Javadoc) {
+		source = android.sourceSets.main.java.srcDirs
+		classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+	}
+} else { // Java libraries
+	task sourcesJar(type: Jar, dependsOn: classes) {
+		classifier = 'sources'
+		from sourceSets.main.allSource
+	}
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives javadocJar
+	archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+	user = properties.getProperty("bintray.user")
+	key = properties.getProperty("bintray.apikey")
+
+	configurations = ['archives']
+	pkg {
+		repo = bintrayRepo
+		name = bintrayName
+		desc = libraryDescription
+		websiteUrl = siteUrl
+		vcsUrl = gitUrl
+		licenses = allLicenses
+		publish = true
+		publicDownloadNumbers = true
+		version {
+			desc = libraryDescription
+			gpg {
+				// optional GPG encryption. Default is false.
+				sign = false
+				//passphrase = properties.getProperty("bintray.gpg.password")
+			}
+		}
+	}
+}

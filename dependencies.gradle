@@ -1,0 +1,22 @@
+ext.versions = [
+		supportLibs : '25.0.0'
+]
+
+ext.libraries = [
+
+		kotlin               : "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version",
+
+		rxJava               : 'io.reactivex.rxjava2:rxjava:2.0.8',
+		rxKotlin             : 'io.reactivex.rxjava2:rxkotlin:2.0.0',
+		rxAndroid            : 'io.reactivex.rxjava2:rxandroid:2.0.1',
+
+		supportAppCompat     : "com.android.support:appcompat-v7:$versions.supportLibs",
+
+		gson                 : "com.google.code.gson:gson:2.8.2",
+
+		junit                : 'junit:junit:4.12',
+		mockito              : 'org.mockito:mockito-core:2.8.47',
+		robolectric          : 'org.robolectric:robolectric:3.3.2',
+		robolectricMultidex  : 'org.robolectric:shadows-multidex:3.3.2',
+		robolectricSupportV4 : 'org.robolectric:shadows-support-v4:3.3.2'
+]

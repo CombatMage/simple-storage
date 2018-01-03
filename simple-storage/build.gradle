@@ -1,19 +1,10 @@
-buildscript {
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-		classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
-	}
-}
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
+// javadoc currently breaks with kotlin files and bintray
 tasks.withType(Javadoc) {
 	enabled = false
 }
-
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
 
 ext {
 	bintrayRepo = 'maven'
@@ -28,24 +19,24 @@ ext {
 	siteUrl = 'https://github.com/CombatMage/simple-storage'
 	gitUrl = 'https://github.com/CombatMage/simple-storage.git'
 
-	libraryVersion = '1.0.2'
+	libraryVersion = '1.1.0'
 
 	developerId = 'combatmage'
 	developerName = 'Eric Neidhardt'
 	developerEmail = 'eric.neidhardt@gmail.com'
 
-	licenseName = 'The Apache Software License, Version 2.0'
-	licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-	allLicenses = ["Apache-2.0"]
+	licenseName = 'MIT license'
+	licenseUrl = 'https://opensource.org/licenses/MIT'
+	allLicenses = ["MIT license"]
 }
 
 android {
-	compileSdkVersion rootProject.ext.compileSdkVersion
-	buildToolsVersion rootProject.ext.buildToolsVersion
+	compileSdkVersion rootProject.ext.compileSDK
+	buildToolsVersion rootProject.ext.buildTools
 
 	defaultConfig {
-		minSdkVersion project.projectMinSdkVersion
-		targetSdkVersion project.projectTargetSdkVersion
+		minSdkVersion project.projectMinSDK
+		targetSdkVersion project.projectTargetSDK
 	}
 	buildTypes {
 		release {
@@ -61,76 +52,36 @@ android {
 }
 
 dependencies {
-	compile fileTree(dir: 'libs', include: ['*.jar'])
+	implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-	compile rootProject.ext.libraries.kotlin
+	// kotlin
+	implementation rootProject.ext.libraries.kotlin
 
-	//RxAndroid
-	compile rootProject.ext.libraries.supportAppCompat
-	compile rootProject.ext.libraries.rxAndroid
-	compile rootProject.ext.libraries.rxKotlin
-	compile rootProject.ext.libraries.rxJava
+	// rx
+	implementation rootProject.ext.libraries.supportAppCompat
+	implementation rootProject.ext.libraries.rxAndroid
+	implementation rootProject.ext.libraries.rxKotlin
+	implementation rootProject.ext.libraries.rxJava
 
-	//Gson
+	// misc
 	compile rootProject.ext.libraries.gson
 
-	//Testing
-	testCompile rootProject.ext.libraries.junit
-	testCompile rootProject.ext.libraries.mockito
-	testCompile rootProject.ext.libraries.robolectric
-	testCompile rootProject.ext.libraries.robolectricMultidex
-	testCompile rootProject.ext.libraries.robolectricSupportV4
+	// testing
+	testImplementation rootProject.ext.libraries.junit
+	testImplementation rootProject.ext.libraries.mockito
+	testImplementation rootProject.ext.libraries.robolectric
+	testImplementation rootProject.ext.libraries.robolectricMultidex
+	testImplementation rootProject.ext.libraries.robolectricSupportV4
 }
 
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = publishedGroupId // Maven Group ID for the artifact
 
-install {
-	repositories.mavenInstaller {
-		// This generates POM.xml with proper parameters
-		pom {
-			project {
-				packaging 'aar'
-				groupId publishedGroupId
-				artifactId artifact
-
-				// Add your description here
-				name libraryName
-				description libraryDescription
-				url siteUrl
-
-				// Set your license
-				licenses {
-					license {
-						name licenseName
-						url licenseUrl
-					}
-				}
-				developers {
-					developer {
-						id developerId
-						name developerName
-						email developerEmail
-					}
-				}
-				scm {
-					connection gitUrl
-					developerConnection gitUrl
-					url siteUrl
-
-				}
-			}
-		}
-	}
-}
-
 // Bintray section
-// As long as you add bintray.user and bintray.apikey to the local.properties
-// file, you shouldn't have to change anything here. The reason you
-// don't just write them here is so that they won't be publicly visible
-// in GitHub or wherever your source control is.
-
+// make sure that you have the following in your local.properties
+// bintray.user=<your user name>
+// bintray.apikey=<your api key
 apply plugin: 'com.jfrog.bintray'
 
 version = libraryVersion
@@ -166,6 +117,40 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 bintray {
+	pom {
+		project {
+			packaging 'aar'
+			groupId publishedGroupId
+			artifactId artifact
+
+			// Add your description here
+			name libraryName
+			description libraryDescription
+			url siteUrl
+
+			// Set your license
+			licenses {
+				license {
+					name licenseName
+					url licenseUrl
+				}
+			}
+			developers {
+				developer {
+					id developerId
+					name developerName
+					email developerEmail
+				}
+			}
+			scm {
+				connection gitUrl
+				developerConnection gitUrl
+				url siteUrl
+
+			}
+		}
+	}.writeTo("$buildDir/poms/pom-default.xml")
+
 	user = properties.getProperty("bintray.user")
 	key = properties.getProperty("bintray.apikey")
 

@@ -10,8 +10,9 @@ import kotlin.properties.Delegates
 
 
 /**
- * Created by eric.neidhardt on 28.11.2016.
- */
+* Created by eric.neidhardt (eric.neidhardt@gmail.com)
+* on 28.11.2016.
+*/
 @RunWith(RobolectricTestRunner::class)
 class SimpleStorageTest {
 
@@ -33,6 +34,14 @@ class SimpleStorageTest {
 	fun saveAndGet() {
 		this.unitUnderTest.save(42).blockingSubscribe()
 		assertEquals(42, this.readFirstItem())
+	}
+
+	@Test
+	fun saveAndGetSync() {
+		// action
+		this.unitUnderTest.saveSync(42)
+		// verify
+		assertEquals(42, this.unitUnderTest.getSync())
 	}
 
 	@Test

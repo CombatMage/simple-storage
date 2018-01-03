@@ -27,7 +27,7 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	val storageKey = "SimpleStorage_${classOfT.name}"
 
 	/**
-	 * save stores data of type [T] in storage.
+	 * saveSync stores data of type [T] in storage.
 	 * The returned Observable's scheduler is [Schedulers.computation()].
 	 *
 	 * @param data - object of [T] to be stored
@@ -42,7 +42,7 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	}
 
 	/**
-	 * get returns an stored data of type [T] as [Optional].
+	 * getSync returns an stored data of type [T] as [Optional].
 	 * If no data was stored before, [Optional.empty] is true.
 	 * The returned Observable's scheduler is default.
 	 *
@@ -75,7 +75,7 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	}
 
 	/**
-	 * save stores data of type [T] in storage.
+	 * saveSync stores data of type [T] in storage.
 	 *
 	 * @param data - object of [T] to be stored
 	 */

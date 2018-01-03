@@ -6,7 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import kotlin.properties.Delegates
+import org.robolectric.annotation.Config
 
 
 /**
@@ -14,58 +14,69 @@ import kotlin.properties.Delegates
 * on 28.11.2016.
 */
 @RunWith(RobolectricTestRunner::class)
+@Config(manifest=Config.NONE)
 class SimpleStorageTest {
 
-	private var unitUnderTest: SimpleStorage<Int> by Delegates.notNull<SimpleStorage<Int>>()
+	private lateinit var unit: SimpleStorage<Int>
 
 	@Before
 	fun setUp() {
-		this.unitUnderTest = SimpleStorage(RuntimeEnvironment.application.applicationContext, Int::class.java)
-		this.unitUnderTest.clear()
+		this.unit = SimpleStorage(
+				RuntimeEnvironment.application.applicationContext,
+				Int::class.java
+		)
+		this.unit.clear()
 	}
 
 	@Test
 	fun precondition() {
-		assertNotNull(this.unitUnderTest.storageKey)
+		// action
+		assertNotNull(this.unit.storageKey)
+		// verify
 		assertNull(this.readFirstItem())
 	}
 
 	@Test
 	fun saveAndGet() {
-		this.unitUnderTest.save(42).blockingSubscribe()
+		// action
+		this.unit.save(42).blockingSubscribe()
+		// verify
 		assertEquals(42, this.readFirstItem())
 	}
 
 	@Test
 	fun saveAndGetSync() {
 		// action
-		this.unitUnderTest.saveSync(42)
+		this.unit.saveSync(42)
 		// verify
-		assertEquals(42, this.unitUnderTest.getSync())
+		assertEquals(42, this.unit.getSync())
 	}
 
 	@Test
 	fun clear() {
-		this.unitUnderTest.save(42).blockingSubscribe()
+		// arrange
+		this.unit.save(42).blockingSubscribe()
 		assertEquals(42, this.readFirstItem())
-
-		this.unitUnderTest.clear()
+		// action
+		this.unit.clear()
+		// verify
 		assertNull(this.readFirstItem())
 	}
 
 	@Test
 	fun saveNonPrimitive() {
+		// arrange
 		val testStorage = SimpleStorage(RuntimeEnvironment.application, TestUser::class.java)
 		val testData = TestUser("user", listOf("item_1", "item_2"))
-
+		// action
 		testStorage.save(testData).blockingSubscribe()
 		val result = testStorage.get().blockingIterable().first().item
-		
+		// verify
 		assertEquals(testData, result)
 	}
 
 	private fun readFirstItem(): Int? {
-		val entry = this.unitUnderTest.get().blockingIterable().first()
+		val entry = this.unit.get().blockingIterable().first()
 		if (entry.isEmpty)
 			return null
 		return entry.item

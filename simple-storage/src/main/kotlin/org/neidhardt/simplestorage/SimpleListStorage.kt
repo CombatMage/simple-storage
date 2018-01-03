@@ -11,38 +11,45 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 /**
- * Created by eric.neidhardt on 28.11.2016.
- */
-class SimpleListStorage<T>(context: Context, private val classOfT: Class<T>) {
+* Created by eric.neidhardt (eric.neidhardt@dlr.de)
+* on 28.11.2016.
+*/
+@Suppress("MemberVisibilityCanPrivate", "unused")
+open class SimpleListStorage<T>(context: Context, private val classOfT: Class<T>) {
 
 	private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 	private val converter = Gson()
 
 	val storageKey = "SimpleStorage_List_${classOfT.name}"
 
-	fun saveItem(item: T) {
+	fun saveItemSync(item: T) {
 		val data = ArrayList<T>()
-		data.addAll(this.get())
+		data.addAll(this.getSync())
 		data.add(item)
-		this.save(data)
+		this.saveSync(data)
 	}
 
-	fun save(data: List<T>) {
+	fun saveSync(data: List<T>) {
 		val listOfJson = data.map { item -> this.converter.toJson(item, this.classOfT) }
 		this.sharedPreferences.putListString(this.storageKey, listOfJson)
 	}
 
+	fun getSync(): List<T> {
+		val listOfJson = this.sharedPreferences.getListString(this.storageKey)
+		return listOfJson.map { json -> this.converter.fromJson(json, this.classOfT) }
+	}
+
 	@CheckResult
-	fun saveAsync(data: List<T>): Observable<List<T>> {
+	fun save(data: List<T>): Observable<List<T>> {
 		return Observable.fromCallable {
-			data.letThis { this.save(data) }
+			data.letThis { this.saveSync(data) }
 		}.subscribeOn(Schedulers.computation())
 	}
 
 	@CheckResult
-	fun getAsync(): Observable<List<T>> {
+	fun get(): Observable<List<T>> {
 		return Observable.create<List<T>> { subscriber ->
-			subscriber.onNext(this.get())
+			subscriber.onNext(this.getSync())
 			subscriber.onComplete()
 		}
 	}
@@ -51,11 +58,6 @@ class SimpleListStorage<T>(context: Context, private val classOfT: Class<T>) {
 		this.sharedPreferences.edit()
 				.remove(this.storageKey)
 				.apply()
-	}
-
-	private fun get(): List<T> {
-		val listOfJson = this.sharedPreferences.getListString(this.storageKey)
-		return listOfJson.map { json -> this.converter.fromJson(json, this.classOfT) }
 	}
 }
 

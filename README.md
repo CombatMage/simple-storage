@@ -4,9 +4,12 @@ A simple lib to store data in shared preferences app storage.
 
 **Gradle**
 
-compile 'org.neidhardt:simple-storage:1.0.2'
+```gradle
+implementation 'org.neidhardt:simple-storage:1.2.0'
+```
 
 **Usage**
+
 ```kotlin
 val storage = SimpleStorage(context, User::class.java)
 val data = User("user", listOf("item_1", "item_2"))

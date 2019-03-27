@@ -16,8 +16,8 @@ ext {
 
 	libraryDescription = 'simple android library to store data'
 
-	siteUrl = 'https://github.com/CombatMage/simple-storage'
-	gitUrl = 'https://github.com/CombatMage/simple-storage.git'
+	siteUrl = 'https://github.com/EricNeid/simple-storage'
+	gitUrl = 'https://github.com/EricNeid/simple-storage.git'
 
 	libraryVersion = '1.2.0'
 

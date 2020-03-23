@@ -21,46 +21,46 @@ class SimpleStorageTest {
 
 	@Before
 	fun setUp() {
-		this.unit = SimpleStorage(
+		unit = SimpleStorage(
 				RuntimeEnvironment.application.applicationContext,
 				Int::class.java
 		)
-		this.unit.clear()
+		unit.clear()
 	}
 
 	@Test
 	fun precondition() {
 		// action
-		assertNotNull(this.unit.storageKey)
+		assertNotNull(unit.storageKey)
 		// verify
-		assertNull(this.readFirstItem())
+		assertNull(readFirstItem())
 	}
 
 	@Test
 	fun saveAndGet() {
 		// action
-		this.unit.save(42).blockingSubscribe()
+		unit.save(42).blockingSubscribe()
 		// verify
-		assertEquals(42, this.readFirstItem())
+		assertEquals(42, readFirstItem())
 	}
 
 	@Test
 	fun saveAndGetSync() {
 		// action
-		this.unit.saveSync(42)
+		unit.saveSync(42)
 		// verify
-		assertEquals(42, this.unit.getSync())
+		assertEquals(42, unit.getSync())
 	}
 
 	@Test
 	fun clear() {
 		// arrange
-		this.unit.save(42).blockingSubscribe()
-		assertEquals(42, this.readFirstItem())
+		unit.save(42).blockingSubscribe()
+		assertEquals(42, readFirstItem())
 		// action
-		this.unit.clear()
+		unit.clear()
 		// verify
-		assertNull(this.readFirstItem())
+		assertNull(readFirstItem())
 	}
 
 	@Test
@@ -76,7 +76,7 @@ class SimpleStorageTest {
 	}
 
 	private fun readFirstItem(): Int? {
-		val entry = this.unit.get().blockingIterable().first()
+		val entry = unit.get().blockingIterable().first()
 		if (entry.isEmpty)
 			return null
 		return entry.item

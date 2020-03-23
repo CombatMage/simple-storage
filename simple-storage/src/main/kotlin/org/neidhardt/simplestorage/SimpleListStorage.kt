@@ -11,10 +11,11 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 /**
-* Created by eric.neidhardt (eric.neidhardt@dlr.de)
-* on 28.11.2016.
-*/
-@Suppress("MemberVisibilityCanPrivate", "unused")
+ * SimpleListStorage is a helper to store list of data of type [T] in [PreferenceManager].
+ * Internally the data is converted to json and joined to a single string and stored.
+ * It supports nested data structures.
+ */
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 open class SimpleListStorage<T>(context: Context, private val classOfT: Class<T>) {
 
 	private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -23,49 +24,50 @@ open class SimpleListStorage<T>(context: Context, private val classOfT: Class<T>
 	val storageKey = "SimpleStorage_List_${classOfT.name}"
 
 	fun saveItemSync(item: T) {
-		val data = ArrayList<T>()
-		data.addAll(this.getSync())
-		data.add(item)
-		this.saveSync(data)
+		val data = ArrayList<T>().apply {
+			addAll(getSync())
+			add(item)
+		}
+		saveSync(data)
 	}
 
 	fun saveSync(data: List<T>) {
-		val listOfJson = data.map { item -> this.converter.toJson(item, this.classOfT) }
-		this.sharedPreferences.putListString(this.storageKey, listOfJson)
+		val listOfJson = data.map { item -> converter.toJson(item, classOfT) }
+		sharedPreferences.putListString(storageKey, listOfJson)
 	}
 
 	fun getSync(): List<T> {
-		val listOfJson = this.sharedPreferences.getListString(this.storageKey)
-		return listOfJson.map { json -> this.converter.fromJson(json, this.classOfT) }
+		val listOfJson = sharedPreferences.getListString(storageKey)
+		return listOfJson.map { json -> converter.fromJson(json, classOfT) }
 	}
 
 	@CheckResult
 	fun save(data: List<T>): Observable<List<T>> {
 		return Observable.fromCallable {
-			data.letThis { this.saveSync(data) }
+			data.also { saveSync(it) }
 		}.subscribeOn(Schedulers.computation())
 	}
 
 	@CheckResult
 	fun get(): Observable<List<T>> {
 		return Observable.create<List<T>> { subscriber ->
-			subscriber.onNext(this.getSync())
+			subscriber.onNext(getSync())
 			subscriber.onComplete()
 		}
 	}
 
 	fun clear() {
-		this.sharedPreferences.edit()
-				.remove(this.storageKey)
+		sharedPreferences.edit()
+				.remove(storageKey)
 				.apply()
 	}
 }
 
 private fun SharedPreferences.putListString(key: String, stringList: List<String>) {
 	val myStringList = stringList.toTypedArray()
-	this.edit().putString(key, TextUtils.join("‚‗‚", myStringList)).apply()
+	edit().putString(key, TextUtils.join("‚‗‚", myStringList)).apply()
 }
 
 private fun SharedPreferences.getListString(key: String): ArrayList<String> {
-	return ArrayList(Arrays.asList(*TextUtils.split(this.getString(key, ""), "‚‗‚")))
+	return ArrayList(listOf(*TextUtils.split(getString(key, ""), "‚‗‚")))
 }

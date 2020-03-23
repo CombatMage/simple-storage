@@ -8,11 +8,6 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 
 /**
-* Created by eric.neidhardt (eric.neidhardt@gmail.com)
-* on 28.11.2016.
-*/
-
-/**
  * SimpleStorage is a helper to store data of type [T] in [PreferenceManager].
  * Internally the data is converted to json and stored. It supports nested data structures.
  */
@@ -36,7 +31,7 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	@CheckResult
 	fun save(data: T): Observable<T> {
 		return Observable.fromCallable {
-			this.saveSync(data)
+			saveSync(data)
 			data
 		}.subscribeOn(Schedulers.computation())
 	}
@@ -50,16 +45,17 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	 */
 	@CheckResult
 	fun get(): Observable<Optional<T>> {
-		this.cachedData?.let { cachedData ->
+		cachedData?.let { cachedData ->
 			return Observable.just(Optional.of(cachedData))
 		}
 
 		return Observable.create<Optional<T>> { subscriber ->
-			val data = this.getSync()
-			if (data == null)
+			val data = getSync()
+			if (data == null) {
 				subscriber.onNext(Optional.empty())
-			else
+			} else {
 				subscriber.onNext(Optional.of(data))
+			}
 			subscriber.onComplete()
 		}
 	}
@@ -68,8 +64,8 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	 * clear deletes all stored data.
 	 */
 	fun clear() {
-		this.cachedData = null
-		this.sharedPreferences.edit()
+		cachedData = null
+		sharedPreferences.edit()
 				.remove(storageKey)
 				.apply()
 	}
@@ -80,9 +76,9 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	 * @param data - object of [T] to be stored
 	 */
 	fun saveSync(data: T) {
-		this.cachedData = data
+		cachedData = data
 		val json = converter.toJson(data)
-		this.sharedPreferences.edit()
+		sharedPreferences.edit()
 				.putString(storageKey, json)
 				.apply()
 	}
@@ -91,7 +87,7 @@ open class SimpleStorage<T>(context: Context, private val classOfT: Class<T>) {
 	 * getSync returns stored data of type [T] or null if no data was stored before.
 	 */
 	fun getSync(): T? {
-		val storedJson = this.sharedPreferences.getString(storageKey, null)
-		return this.converter.fromJson(storedJson, this.classOfT)
+		val storedJson = sharedPreferences.getString(storageKey, null)
+		return converter.fromJson(storedJson, classOfT)
 	}
 }

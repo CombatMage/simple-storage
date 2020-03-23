@@ -20,19 +20,19 @@ class SimpleListStorageTest {
 
 	@Before
 	fun setUp() {
-		this.unit = SimpleListStorage(
+		unit = SimpleListStorage(
 				RuntimeEnvironment.application.applicationContext,
 				Int::class.java
 		)
-		this.unit.clear()
+		unit.clear()
 	}
 
 	@Test
 	fun precondition() {
 		// action
-		assertNotNull(this.unit.storageKey)
+		assertNotNull(unit.storageKey)
 		// verify
-		assertTrue(this.unit.get().blockingIterable().first().isEmpty())
+		assertTrue(unit.get().blockingIterable().first().isEmpty())
 	}
 
 	@Test
@@ -40,21 +40,21 @@ class SimpleListStorageTest {
 		// arrange
 		val data = listOf(1,2,3,4)
 		// action
-		this.unit.save(data).blockingSubscribe()
+		unit.save(data).blockingSubscribe()
 		// verify
-		assertTrue(data.containsAll(this.unit.get().blockingIterable().first()))
+		assertTrue(data.containsAll(unit.get().blockingIterable().first()))
 	}
 
 	@Test
 	fun clear() {
 		// arrange
 		val data = listOf(1,2,3,4)
-		this.unit.save(data).blockingSubscribe()
-		assertTrue(data.containsAll(this.unit.get().blockingIterable().first()))
+		unit.save(data).blockingSubscribe()
+		assertTrue(data.containsAll(unit.get().blockingIterable().first()))
 		// action
-		this.unit.clear()
+		unit.clear()
 		// verify
-		assertTrue(this.unit.get().blockingIterable().first().isEmpty())
+		assertTrue(unit.get().blockingIterable().first().isEmpty())
 	}
 
 	@Test

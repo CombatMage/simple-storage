@@ -7,3 +7,4 @@ gradle.properties
 *.project
 *.prefs
 simple-storage/.classpath
+/.vscode/settings.json

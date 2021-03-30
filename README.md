@@ -2,13 +2,19 @@
 
 A simple lib to store data in shared preferences app storage. 
 
-**Gradle**
+## Gradle
 
 ```gradle
-implementation 'org.neidhardt:simple-storage:1.2.0'
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.github.ericneid:simple-storage:1.3.1'
+}
 ```
 
-**Usage**
+## Usage
 
 ```kotlin
 val storage = SimpleStorage(context, User::class.java)

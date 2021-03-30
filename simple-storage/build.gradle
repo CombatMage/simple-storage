@@ -1,176 +1,81 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-
-// javadoc currently breaks with kotlin files and bintray
-tasks.withType(Javadoc) {
-	enabled = false
-}
+def groupId = 'com.github.ericneid'
+def libraryName = 'simple-storage'
+def libraryVersion = '1.3.1'
 
 ext {
-	bintrayRepo = 'maven'
-	bintrayName = 'simple-storage'
-
-	publishedGroupId = 'org.neidhardt'
-	libraryName = 'simple-storage'
-	artifact = 'simple-storage'
-
-	libraryDescription = 'simple android library to store data'
-
-	siteUrl = 'https://github.com/EricNeid/simple-storage'
-	gitUrl = 'https://github.com/EricNeid/simple-storage.git'
-
-	libraryVersion = '1.3.0'
-
-	developerId = 'combatmage'
-	developerName = 'Eric Neidhardt'
-	developerEmail = 'eric.neidhardt@gmail.com'
-
-	licenseName = 'MIT license'
-	licenseUrl = 'https://opensource.org/licenses/MIT'
-	allLicenses = ["MIT license"]
+	PUBLISH_GROUP_ID = groupId
+	PUBLISH_VERSION = libraryVersion
+	PUBLISH_ARTIFACT_ID = libraryName
 }
 
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply from: "${rootProject.projectDir}/scripts/publish-mavencentral.gradle"
+
 android {
-	compileSdkVersion rootProject.ext.compileSDK
-	buildToolsVersion rootProject.ext.buildTools
+	compileSdkVersion rootProject.compileSdkVersion
+	buildToolsVersion rootProject.buildToolsVersion
 
 	defaultConfig {
-		minSdkVersion project.projectMinSDK
-		targetSdkVersion project.projectTargetSDK
+		minSdkVersion project.minSdkVersion
+		targetSdkVersion project.targetSdkVersion
+		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 	}
+
 	buildTypes {
 		release {
 			minifyEnabled false
 		}
 	}
+
 	sourceSets {
 		main.java.srcDirs += 'src/main/kotlin'
 		test.java.srcDirs += 'src/test/kotlin'
 		debug.java.srcDirs += 'src/debug/kotlin'
 		release.java.srcDirs += 'src/release/kotlin'
 	}
+
+	compileOptions {
+		sourceCompatibility = '1.8'
+		targetCompatibility = '1.8'
+	}
+
+	testOptions {
+		unitTests.returnDefaultValues = true
+	}
 }
+
+group = groupId
+version = libraryVersion
+archivesBaseName = libraryName
+
+repositories {
+	google()
+	jcenter()
+	mavenCentral()
+}
+
+def androidSupportLibVersion = '25.4.0'
 
 dependencies {
-	implementation fileTree(dir: 'libs', include: ['*.jar'])
-
 	// kotlin
-	implementation rootProject.ext.libraries.kotlin
+	implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+	// android support
+	implementation  "com.android.support:appcompat-v7:$androidSupportLibVersion"
 
 	// rx
-	implementation rootProject.ext.libraries.supportAppCompat
-	implementation rootProject.ext.libraries.rxAndroid
-	implementation rootProject.ext.libraries.rxKotlin
-	implementation rootProject.ext.libraries.rxJava
+	implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+	implementation 'io.reactivex.rxjava2:rxkotlin:2.0.0'
+	implementation 'io.reactivex.rxjava2:rxjava:2.0.8'
 
 	// misc
-	implementation rootProject.ext.libraries.gson
+	implementation 'com.google.code.gson:gson:2.8.2'
 
 	// testing
-	testImplementation rootProject.ext.libraries.junit
-	testImplementation rootProject.ext.libraries.mockito
-	testImplementation rootProject.ext.libraries.robolectric
-	testImplementation rootProject.ext.libraries.robolectricMultidex
-	testImplementation rootProject.ext.libraries.robolectricSupportV4
-}
-
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = publishedGroupId // Maven Group ID for the artifact
-
-// Bintray section
-// make sure that you have the following in your local.properties
-// bintray.user=<your user name>
-// bintray.apikey=<your api key
-apply plugin: 'com.jfrog.bintray'
-
-version = libraryVersion
-
-if (project.hasProperty("android")) { // Android libraries
-	task sourcesJar(type: Jar) {
-		classifier = 'sources'
-		from android.sourceSets.main.java.srcDirs
-	}
-
-	task javadoc(type: Javadoc) {
-		source = android.sourceSets.main.java.srcDirs
-		classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-	}
-} else { // Java libraries
-	task sourcesJar(type: Jar, dependsOn: classes) {
-		classifier = 'sources'
-		from sourceSets.main.allSource
-	}
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	classifier = 'javadoc'
-	from javadoc.destinationDir
-}
-
-artifacts {
-	archives javadocJar
-	archives sourcesJar
-}
-
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
-bintray {
-	pom {
-		project {
-			packaging 'aar'
-			groupId publishedGroupId
-			artifactId artifact
-
-			// Add your description here
-			name libraryName
-			description libraryDescription
-			url siteUrl
-
-			// Set your license
-			licenses {
-				license {
-					name licenseName
-					url licenseUrl
-				}
-			}
-			developers {
-				developer {
-					id developerId
-					name developerName
-					email developerEmail
-				}
-			}
-			scm {
-				connection gitUrl
-				developerConnection gitUrl
-				url siteUrl
-
-			}
-		}
-	}.writeTo("$buildDir/poms/pom-default.xml")
-
-	user = properties.getProperty("bintray.user")
-	key = properties.getProperty("bintray.apikey")
-
-	configurations = ['archives']
-	pkg {
-		repo = bintrayRepo
-		name = bintrayName
-		desc = libraryDescription
-		websiteUrl = siteUrl
-		vcsUrl = gitUrl
-		licenses = allLicenses
-		publish = true
-		publicDownloadNumbers = true
-		version {
-			desc = libraryDescription
-			gpg {
-				// optional GPG encryption. Default is false.
-				sign = false
-				//passphrase = properties.getProperty("bintray.gpg.password")
-			}
-		}
-	}
+	testImplementation 'junit:junit:4.12'
+	testImplementation 'org.mockito:mockito-core:2.8.47'
+	testImplementation 'org.robolectric:robolectric:3.3.2'
+	testImplementation 'org.robolectric:shadows-multidex:3.3.2'
+	testImplementation 'org.robolectric:shadows-support-v4:3.3.2'
 }
